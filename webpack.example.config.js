@@ -15,6 +15,7 @@ module.exports = {
       complex: './examples/js/complex/demo.js',
       style: './examples/js/style/demo.js',
       advance: './examples/js/advance/demo.js',
+      remoteDataSrouce: './examples/js/remote-data-source/demo.js',
       vendors: ['webpack-dev-server/client?http://localhost:3004', 'webpack/hot/only-dev-server']
     },
     devtool: 'eval',

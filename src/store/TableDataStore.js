@@ -49,12 +49,16 @@ export class TableDataStore{
     this.sortObj = null;
     this.pageObj = {};
     this.selected = [];
+    // APPBIR ADD isRemoteLoad para
+    this.isRemoteLoad = false;
   }
 
-  setProps(isPagination, keyField, customSortFuncMap){
+  // APPBIR ADD isRemoteLoad para
+  setProps(isPagination, keyField, customSortFuncMap,isRemoteLoad){
     this.keyField = keyField;
     this.enablePagination = isPagination;
     this.customSortFuncMap = customSortFuncMap;
+    this.isRemoteLoad = isRemoteLoad;
   }
 
   setData(data) {
@@ -201,7 +205,7 @@ export class TableDataStore{
 
     if(_data.length == 0) return _data;
 
-    if(!this.enablePagination){
+    if(this.isRemoteLoad || !this.enablePagination){
       return _data;
     }else{
       var result = [];
