@@ -38,9 +38,7 @@ class BootstrapTable extends React.Component {
         this.setState({
           data: this.getTableData()
         })
-      }.bind(this)
-    )
-      ;
+      });
     } else {
       this.store = new TableDataStore(this.props.data);
     }
@@ -62,9 +60,15 @@ class BootstrapTable extends React.Component {
   getTableData() {
     let result = [];
     if (this.props.pagination) {
-      result = this.store.page(this.props.options.page || 1,
-          this.props.options.sizePerPage || Const.SIZE_PER_PAGE_LIST[0])
-        .get();
+      let page, sizePerPage;
+      if (this.store.isChangedPage()) {
+        sizePerPage = this.refs.pagination.getSizePerPage();
+        page = this.refs.pagination.getCurrentPage();
+      } else {
+        sizePerPage = this.props.options.sizePerPage || Const.SIZE_PER_PAGE_LIST[0];
+        page = this.props.options.page || 1;
+      }
+      result = this.store.page(page, sizePerPage).get();
     } else {
       result = this.store.get();
     }
@@ -194,9 +198,10 @@ class BootstrapTable extends React.Component {
     this.setState({
       selectedRowKeys: selectedRowKeys
     });
+
     if (this.props.selectRow.onSelectAll) {
-      //APPBIR  selectedRowKeys return selectKeys
-      this.props.selectRow.onSelectAll(isSelected, selectedRowKeys);
+      this.props.selectRow.onSelectAll(isSelected,
+        isSelected ? this.store.get() : []);
     }
   }
 
@@ -433,6 +438,7 @@ class BootstrapTable extends React.Component {
     }
   }
 }
+
 BootstrapTable.propTypes = {
   height: React.PropTypes.string,
   data: React.PropTypes.array,
@@ -473,10 +479,10 @@ BootstrapTable.propTypes = {
     sizePerPage: React.PropTypes.number,
     paginationSize: React.PropTypes.number,
     //APPBIR ADD
-    onSortChange:React.PropTypes.func,
-    onPageChange:React.PropTypes.func,
-    isRemoteLoad:React.PropTypes.bool,
-    dataSize:React.PropTypes.number
+    onSortChange: React.PropTypes.func,
+    onPageChange: React.PropTypes.func,
+    isRemoteLoad: React.PropTypes.bool,
+    dataSize: React.PropTypes.number
   })
 };
 BootstrapTable.defaultProps = {
