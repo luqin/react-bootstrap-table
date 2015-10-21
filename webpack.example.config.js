@@ -15,12 +15,12 @@ module.exports = {
   serverConfig: {
     port: '3004',// server port
     publicPath: '/',// js path
-    contentBase: 'examples/'//web root path
+    contentBase: 'examples/'// web root path
   },
   resolve: {
     extensions: ['', '.js', '.jsx'],
     alias: {
-      'react-bootstrap-table': '../../../src/index.js'
+      'react-bootstrap-table': path.resolve(__dirname, './src')
     }
   },
   module: {
