@@ -36,6 +36,7 @@
     "bootstrap": "3.3.5",
     "browserify": "^9.0.3",
     "css-loader": "^0.18.0",
+    "es6-promise": "^3.0.2",
     "eslint": "1.7.2",
     "eslint-config-airbnb": "0.1.0",
     "eslint-plugin-react": "3.6.3",
@@ -60,11 +61,9 @@
     "react-toastr": "^2.1.0",
     "classnames": "^2.1.2"
   },
-
   "peerDependencies": {
     "react": "^0.14.0"
   },
-
   "jest": {
     "scriptPreprocessor": "<rootDir>/preprocessor.js",
     "unmockedModulePathPatterns": [

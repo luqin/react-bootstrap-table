@@ -1,102 +1,125 @@
-'use strict';
 import React from 'react';
-import {BootstrapTable, TableHeaderColumn,TableDataSet} from 'react-bootstrap-table';
+import {Promise} from 'es6-promise';
+import {BootstrapTable, TableHeaderColumn, TableDataSet} from 'react-bootstrap-table';
 
+function queryData(query) {
+  let {pageSize, page} = query;
 
-function getProducts(quantity, startId) {
-  var arr = []
-  for (var i = 0; i < quantity; i++) {
-    var id = startId + i;
-    arr.push({
+  let data = [];
+  let start = pageSize * page;
+  for (let i = start; i < start + pageSize; i++) {
+    var id = i;
+    data.push({
       id: id,
-      name: "Name" + id,
-      price: 10 + i
+      name: 'Name' + id,
+      price: 10 + i,
     });
   }
-  return arr;
-}
 
-function getList(pageInfo) {
+  let pageInfo = $.extend(true, {}, query);
+  pageInfo.dataSize = 1000;
 
-
-  return {
-    pageInfo: {},
-    data: []
+  let result = {
+    pageInfo: pageInfo,
+    data: data,
   };
-}
 
+  console.info('result', result);
+
+  return new Promise((resolve)=> {
+    setTimeout(()=> {
+      resolve(result);
+    }, 2000);
+  });
+}
 
 export default class DefaultPaginationTable extends React.Component {
   constructor(props) {
     super(props);
-    this.dataSet = new TableDataSet(getProducts(40, "defaultData"));
 
-    //分页改变事件
-    var changePage = function (page, sizePerPage) {
-      console.log(page, sizePerPage);
-      var newState = $.extend(true, {}, this.state.options);
-      var newProducts = getProducts(5, "changePage");
-      newState.page = page; //显示第几页
-      newState.dataSize = 20; //数据总数
-      newState.sizePerPage = 5; // 每页分页大小数量
-      // newState.paginationSize=10; //显示页数按钮分页个数  //未扩展实现
-      function cb() {
-        this.dataSet.setData(newProducts);
-      }
+    this.dataSet = new TableDataSet([]);
 
-      this.setState({options: newState}, cb);  //设置分页
-    }.bind(this)
-
-    //排序事件
-    var handleSort = function (order, sortField, options) {
-      console.log(order + " " + sortField + " " + options);
-      var newState = $.extend(true, {}, this.state.options);
-      var newProducts = getProducts(10, "handleSort");
-      newState.page = 2; //显示第几页
-      newState.dataSize = 60; //数据总数
-      newState.sizePerPage = 5; // 每页分页大小数量
-      // newState.paginationSize=10; //显示页数按钮分页个数  //为实现
-      this.setState({options: newState}, cb);  //设置分页
-      function cb() {
-        this.dataSet.setData(newProducts);
-      }
-
-    }.bind(this)
+    this.loading = false;
+    this.query = {
+      pageSize: 10,
+      page: 1,
+    };
 
     this.state = {
-
       options: {
-        page: 0,  //默认显示页数
-        sizePerPageList: [5, 10, 30, 50, 100], //分页选择数量
-        sizePerPage: 10,  //每页分页大小数量
-        paginationSize: 10,  //显示分页数按钮个数
-
-        //远程分页添加内容
+        page: 1,
+        // 远程分页添加内容
         isRemoteLoad: true, // 远程分页
-        onPageChange: changePage, //分页变更事件
-        dataSize: 30,    //总共数据大小
-        onSortChange: handleSort //排序事件
-      }
-
-
-    }
-    this.selectRowProp = {
-      mode: "checkbox",
-      clickToSelect: true,
-      // bgColor: "rgb(238, 193, 213)",
-      onSelect: function () {
-        console.log("onRowSelect")
+        onPageChange: this.onPageChange.bind(this),
+        dataSize: 0,
+        onSortChange: this.onSortChange.bind(this),
       },
-      onSelectAll: function (isSelect) {
-        console.log("onSelectAll")
+    };
+
+    this.selectRowProp = {
+      mode: 'checkbox',
+      onSelect: function () {
+        console.log('onRowSelect', arguments);
+      },
+      onSelectAll: function () {
+        console.log('onSelectAll', arguments);
       },
     };
   }
 
+  componentDidMount() {
+    this.loadData(this.query);
+  }
+
+  onPageChange(page, pageSize) {
+    console.log('pageChange', arguments);
+
+    if (this.query.page !== page || this.query.pageSize !== pageSize) {
+      this.loadData({
+        page: page,
+        pageSize: pageSize,
+      });
+    }
+  }
+
+  onSortChange(order, sortField, options) {
+    console.info('handleSort', arguments);
+  }
+
+  onDataSourceResponse(result) {
+    let {pageInfo} = result;
+
+    var newState = $.extend(true, {}, this.state.options);
+    newState.page = pageInfo.page;
+    newState.dataSize = pageInfo.dataSize;
+
+    var newData = result.data;
+
+    // this.query = query;
+
+    this.setState({ options: newState }, function cb() {
+      this.dataSet.setData(newData);
+    });
+  }
+
+  loadData(query) {
+    let dataSource = queryData(query);
+
+    if (dataSource && dataSource.then) {
+      dataSource.then(this.onDataSourceResponse.bind(this), this.onDataSourceResponse.bind(this));
+    }
+  }
+
   render() {
     return (
-      <BootstrapTable data={this.dataSet} pagination={true} selectRow={this.selectRowProp} options={this.state.options}>
-        <TableHeaderColumn dataField="id" dataSort={true} isKey={true}>Product ID</TableHeaderColumn>
+      <BootstrapTable
+        data={this.dataSet}
+        pagination
+        selectRow={this.selectRowProp}
+        options={this.state.options}
+      >
+        <TableHeaderColumn dataField="id" dataSort={true} isKey={true}>Product
+          ID</TableHeaderColumn>
         <TableHeaderColumn dataField="name">Product Name</TableHeaderColumn>
         <TableHeaderColumn dataField="price">Product Price</TableHeaderColumn>
       </BootstrapTable>

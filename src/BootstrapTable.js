@@ -165,7 +165,7 @@ class BootstrapTable extends React.Component {
   handleSort(order, sortField) {
     //APPBIR  ADD remote sort open interface
     if (this.props.options && this.props.options.isRemoteLoad) {
-      return this.props.options.handleSort && this.props.options.handleSort(order, sortField, this.props.options);
+      return this.props.options.onSortChange && this.props.options.onSortChange(order, sortField, this.props.options);
     }
 
     let result = this.store.sort(order, sortField).get();
@@ -176,9 +176,9 @@ class BootstrapTable extends React.Component {
 
   handlePaginationData(page, sizePerPage) {
     //APPBIR ADD
-    var changePage = this.props.options.changePage;
-    if (changePage) {
-      return changePage(page, sizePerPage);
+    let onPageChange = this.props.options.onPageChange;
+    if (onPageChange) {
+      return onPageChange(page, sizePerPage);
     }
 
     let result = this.store.page(page, sizePerPage).get();

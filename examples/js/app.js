@@ -30,6 +30,7 @@ const routes = (
         <Route path="advance" component={require('./advance/demo')} />
         <Route path="complex" component={require('./basic/demo')} />
         <Route path="tableDataSet" component={require('./basic/demo')} />
+        <Route path="remote-data-source" component={require('./remote-data-source/demo')} />
       </Route>
       <Route path="*" component={PageNotFound}/>
     </Route>

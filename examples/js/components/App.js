@@ -68,6 +68,9 @@ class App extends React.Component {
     }, {
       text: 'TableDataSet demo',
       href: 'tableDataSet',
+    }, {
+      text: 'Remote Data Source',
+      href: 'remote-data-source',
     }];
     const exampleMenuItems = examples.map((e, i)=>{
       return <MenuItem eventKey={i} href={'#examples/' + e.href}>{e.text}</MenuItem>;
