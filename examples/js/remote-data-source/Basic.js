@@ -1,10 +1,34 @@
 import React from 'react';
-import {BootstrapTable} from './table/bootstrapTable';
+import {BootstrapTable} from './table';
 
 function dataSource(query) {
-  // query.order
-  return new Promise(function () {
+  let {pageSize, page} = query;
 
+  let data = [];
+  let start = pageSize * page;
+  for (let i = start; i < start + pageSize; i++) {
+    data.push({
+      id: i,
+      pid: i,
+      name: 'Name' + i,
+      price: 10 + i,
+    });
+  }
+
+  let pageInfo = $.extend(true, {}, query);
+  pageInfo.dataSize = 1000;
+
+  let result = {
+    pageInfo: pageInfo,
+    data: data,
+  };
+
+  console.info('result', result);
+
+  return new Promise((resolve)=> {
+    setTimeout(()=> {
+      resolve(result);
+    }, 1000);
   });
 }
 
@@ -19,47 +43,36 @@ class Basic extends React.Component {
     this.state = {};
   }
 
-  componentDidMount() {
-  }
-
   render() {
     let columns = [{
       title: 'ID',
       dataField: 'id',
       sortable: true,
       hidden: true,
-      textAlign: 'right'
+      textAlign: 'right',
     }, {
       title: 'Product ID',
       dataField: 'pid',
-      sortable: true
+      sortable: true,
     }, {
       title: 'Product Name',
       dataField: 'name',
-      sortable: true
+      sortable: true,
     }, {
       title: 'Product Price',
       dataField: 'price',
-      sortable: true
+      sortable: true,
     }];
-    let pagination = {
-      current: 1,
-      total: 100,
-      pageSize: 10
-    };
     let order = [{}];
     return (
-      <div>
-        <BootstrapTable
-          columns={columns}
-          dataSource={dataSource}
-          rowKey="id"
-          rowSelection={{}}
-          pagination={pagination}
-          order={order}
-          striped bordered condensed hover
-        />
-      </div>
+      <BootstrapTable
+        columns={columns}
+        dataSource={dataSource}
+        rowKey="id"
+        rowSelection={{}}
+        order={order}
+        striped bordered condensed hover
+      />
     );
   }
 }
