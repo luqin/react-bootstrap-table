@@ -1,4 +1,3 @@
-'use strict';
 import React from 'react';
 import {BootstrapTable, TableHeaderColumn} from 'react-bootstrap-table';
 
@@ -29,7 +28,7 @@ export default class HtmlColumnFormatTable extends React.Component{
   render(){
     return (
       <BootstrapTable data={products}>
-          <TableHeaderColumn dataField="id" isKey={true}>Product ID</TableHeaderColumn>
+          <TableHeaderColumn dataField="id" isKey>Product ID</TableHeaderColumn>
           <TableHeaderColumn dataField="name">Product Name</TableHeaderColumn>
           <TableHeaderColumn dataField="price" dataFormat={priceFormatter}>Product Price</TableHeaderColumn>
       </BootstrapTable>

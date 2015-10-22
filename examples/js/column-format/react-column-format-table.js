@@ -23,7 +23,7 @@ addProducts(5);
 class ActiveFormatter extends React.Component{
   render(){
     return (
-      <input type='checkbox' checked={this.props.active}></input>
+      <input type='checkbox' defaultChecked={this.props.active}></input>
     );
   }
 };
