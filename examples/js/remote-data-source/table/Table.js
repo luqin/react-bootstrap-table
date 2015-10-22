@@ -1,5 +1,7 @@
 import React from 'react';
-import {BootstrapTable, TableHeaderColumn, TableDataSet} from 'react-bootstrap-table';
+import {BootstrapTable, TableDataSet} from 'react-bootstrap-table';
+
+const isArray = Array.isArray;
 
 class Table extends React.Component {
   constructor(props) {
@@ -11,6 +13,7 @@ class Table extends React.Component {
     this.query = {
       pageSize: 10,
       page: 1,
+      sortInfo: [],
     };
 
     this.state = {
@@ -25,21 +28,45 @@ class Table extends React.Component {
     };
   }
 
+  componentWillMount() {
+    if (this.isRemoteDataSource(this.props)) {
+      this.loadDataSource(this.props.dataSource, this.props);
+    }
+  }
+
   componentDidMount() {
-    this.loadData(this.query);
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.isRemoteDataSource(nextProps)) {
+      if (nextProps.reload) {
+        this.loadDataSource(nextProps.dataSource, nextProps);
+      }
+    }
   }
 
   onPageChange(page, pageSize) {
     console.log('pageChange', arguments);
 
-    this.loadData({
-      page: page,
-      pageSize: pageSize,
-    });
+    this.query.page = page;
+    this.query.pageSize = pageSize;
+
+    this.reload();
   }
 
   onSortChange(order, sortField, options) {
     console.info('handleSort', arguments);
+
+    const sortInfo = [];
+    if (sortField) {
+      sortInfo.push({
+        name: sortField,
+        dir: order,
+      });
+    }
+    this.query.sortInfo = sortInfo;
+
+    this.reload();
   }
 
   onDataSourceResponse(result) {
@@ -53,20 +80,76 @@ class Table extends React.Component {
 
     // this.query = query;
 
-    this.setState({options: newState}, function cb() {
+    this.setState({ options: newState }, function cb() {
       this.dataSet.setData(newData);
     });
   }
 
-  loadData(query) {
-    let dataSource = this.props.dataSource(query);
+  setPageSize(pageSize) {
+    this.query.pageSize = pageSize;
+    this.reload();
+  }
+
+  /**
+   * Returns true if in the current configuration,
+   * the datagrid should load its data remotely.
+   *
+   * @param  {Object}  [props] Optional. If not given, this.props will be used
+   * @return {Boolean}
+   */
+  isRemoteDataSource(props) {
+    props = props || this.props;
+
+    return props.dataSource && !isArray(props.dataSource);
+  }
+
+  gotoPage(page) {
+    if (typeof this.props.onPageChange === 'function') {
+      this.props.onPageChange(page);
+    } else {
+      this.query.page = page;
+
+      return this.reload();
+    }
+  }
+
+  /**
+   * Loads remote data
+   *
+   * @param  {String/Function/Promise} [dataSource]
+   * @param  {Object} [props]
+   */
+  loadDataSource(dataSource, props) {
+    props = props || this.props;
+
+    if (!arguments.length) {
+      dataSource = props.dataSource;
+    }
+
+    // let dataSourceQuery = {};
+    //
+    // dataSourceQuery.sortInfo = props.sortInfo;
+
+    let dataSourceQuery = this.query;
+
+    if (typeof dataSource === 'function') {
+      dataSource = dataSource(dataSourceQuery, props);
+    }
 
     if (dataSource && dataSource.then) {
       dataSource.then(this.onDataSourceResponse.bind(this), this.onDataSourceResponse.bind(this));
     }
   }
 
+  reload() {
+    if (this.dataSource) {
+      return this.loadDataSource(this.dataSource, this.props);
+    }
+  }
+
   render() {
+    this.dataSource = this.props.dataSource;
+
     return (
       <BootstrapTable
         {...this.props}

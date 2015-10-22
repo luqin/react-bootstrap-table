@@ -1,6 +1,6 @@
 import React from 'react';
 import BSTable from './Table';
-import TableHeaderColumn from './TableHeaderColumn';
+import {TableHeaderColumn} from 'react-bootstrap-table';
 
 class BootstrapTable extends React.Component {
 
@@ -11,7 +11,7 @@ class BootstrapTable extends React.Component {
     dataSource: React.PropTypes.oneOfType([React.PropTypes.array, React.PropTypes.func]),
     columns: React.PropTypes.array,
     rowKey: React.PropTypes.string.isRequired,
-    pagination: React.PropTypes.oneOfType([React.PropTypes.array, React.PropTypes.object]),
+    pagination: React.PropTypes.oneOfType([React.PropTypes.bool, React.PropTypes.object]),
     order: React.PropTypes.array,
     rowSelection: React.PropTypes.oneOfType([React.PropTypes.array, React.PropTypes.object]),
 
@@ -36,12 +36,21 @@ class BootstrapTable extends React.Component {
 
   }
 
+  reload() {
+    this.refs.grid.reload();
+  }
+
   renderTableHeaderColumns(props) {
-    return props.columns.map(column => {
+    return props.columns.map((column, idx) => {
+      const {sortable, textAlign, render, ...other} = column;
       return (
         <TableHeaderColumn
-          {...column}
+          key={idx}
           isKey={column.dataField === props.rowKey}
+          dataFormat={render}
+          {...other}
+          dataAlign={textAlign}
+          dataSort={sortable}
         >
           {column.title}
         </TableHeaderColumn>
@@ -50,8 +59,9 @@ class BootstrapTable extends React.Component {
   }
 
   render() {
+    const {dataSource, pagination, ...other} = this.props;
     return (
-      <BSTable dataSource={this.props.dataSource} pagination={true}>
+      <BSTable ref="grid" {...other} dataSource={dataSource} pagination>
         {this.renderTableHeaderColumns(this.props)}
       </BSTable>
     );
