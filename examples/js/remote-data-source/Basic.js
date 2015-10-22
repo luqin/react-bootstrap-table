@@ -41,10 +41,8 @@ class Basic extends React.Component {
   constructor(props) {
     super(props);
     this.state = {};
-  }
 
-  render() {
-    let columns = [{
+    this.columns = [{
       title: 'ID',
       dataField: 'id',
       sortable: true,
@@ -63,10 +61,13 @@ class Basic extends React.Component {
       dataField: 'price',
       sortable: true,
     }];
+  }
+
+  render() {
     let order = [{}];
     return (
       <BootstrapTable
-        columns={columns}
+        columns={this.columns}
         dataSource={dataSource}
         rowKey="id"
         rowSelection={{}}
