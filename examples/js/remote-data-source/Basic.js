@@ -32,7 +32,7 @@ class Basic extends React.Component {
       dataField: 'price',
       sortable: true,
       render(cell) {
-        return '<i class="glyphicon glyphicon-usd"/> ' + cell;
+        return '<i class="glyphicon glyphicon-usd"></i> ' + cell;
       },
     }, {
       title: 'Operation',
