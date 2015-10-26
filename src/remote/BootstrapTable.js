@@ -24,7 +24,6 @@ class BootstrapTable extends React.Component {
 
   static defaultProps = {
     pagination: false,
-    rowSelection: false,
   };
 
   constructor(props) {
@@ -59,9 +58,9 @@ class BootstrapTable extends React.Component {
   }
 
   render() {
-    const {dataSource, pagination, ...other} = this.props;
+    const {dataSource, pagination, rowSelection, ...other} = this.props;
     return (
-      <BSTable ref="grid" {...other} dataSource={dataSource} pagination>
+      <BSTable ref="grid" {...other} dataSource={dataSource} pagination selectRow={rowSelection}>
         {this.renderTableHeaderColumns(this.props)}
       </BSTable>
     );

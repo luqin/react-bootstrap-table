@@ -114,7 +114,7 @@ class Basic extends React.Component {
           dataSource={this.dataSource}
           rowKey="id"
           selectRow={{
-            mode: 'checkbox'
+            mode: 'checkbox',
           }}
           order={order}
           striped
