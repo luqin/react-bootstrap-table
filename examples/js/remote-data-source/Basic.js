@@ -1,5 +1,5 @@
 import React from 'react';
-import {BootstrapTable} from './table';
+import {BootstrapTable} from 'react-bootstrap-table/remote';
 import {Button} from 'react-bootstrap';
 
 class Basic extends React.Component {

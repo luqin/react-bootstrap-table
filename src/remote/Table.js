@@ -1,5 +1,5 @@
 import React from 'react';
-import {BootstrapTable, TableDataSet} from 'react-bootstrap-table';
+import {BootstrapTable, TableDataSet} from '../index';
 
 const isArray = Array.isArray;
 
