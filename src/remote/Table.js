@@ -1,5 +1,6 @@
 import React from 'react';
-import {BootstrapTable, TableDataSet} from '../index';
+import BootstrapTable from '../BootstrapTable';
+import {TableDataSet} from '../store/TableDataStore';
 import objectAssign from 'object-assign';
 
 const isArray = Array.isArray;
@@ -53,7 +54,7 @@ class Table extends React.Component {
     this.reload();
   }
 
-  onSortChange(order, sortField, options) {
+  onSortChange(sortField, order, options) {
     console.info('handleSort', arguments);
 
     const sortInfo = [];
