@@ -1,3 +1,49 @@
+<a name="v1.2.4"></a>
+# [v1.2.4](https://github.com/AllenFang/react-bootstrap-table/compare/v1.2.3...v1.2.4) (2015-10-26)
+### Enhancement
+* The gap between table and pagination([c1a886b](https://github.com/AllenFang/react-bootstrap-table/commit/c1a886bc3817f38466938bf9f8e78112b97bc656))
+* Ensure default checkbox in editor is String([0ef45d0](https://github.com/AllenFang/react-bootstrap-table/commit/0ef45d0ed16d0bb09f277708c0315378bf78869e))
+* Support ```keyField```([2fab4d8](https://github.com/AllenFang/react-bootstrap-table/commit/2fab4d8fd37cb2c3df548342d6d9568646a6bfaa))
+	* Set ```keyField``` in ```<BootstrapTable>``` to specify which column is key.
+	* Actually, this attribute is as same as the ```isKey``` in ```<TableHeaderColumn>```. So you can choose on to assign which column is key.
+
+### Features
+* Add ```onPageChange``` hook
+```javascript
+
+	function onPageChange(page, sizePerPage){
+		...
+	}
+
+	var options = {
+		onPageChange: onPageChange
+	}
+
+	<BootstrapTable
+          data={products}
+          pagination={true}
+          options={options}
+        >...
+}
+```
+* Add ```onSortChange``` hook
+```javascript
+
+	function onSortChange(sortName, sortOrder){
+		...
+	}
+
+	var options = {
+		onSortChange: onSortChange
+	}
+
+	<BootstrapTable
+          data={products}
+          options={options}
+        >...
+}
+```
+
 <a name="v1.2.3"></a>
 # [v1.2.3](https://github.com/AllenFang/react-bootstrap-table/compare/v1.2.2...v1.2.3) (2015-10-24)
 
@@ -29,11 +75,11 @@
 
 ### Features
 * Get selected Data only show in table when onSelectAll be called([9d391ee](https://github.com/AllenFang/react-bootstrap-table/commit/9d391ee10a06b4ff53b5b19684b2cfedb23331ea))
-  ```javascript
-    function onSelectAll(isSelected, currentDisplayAndSelectedData){
-       //..
-  }
-  ```
+```javascript
+  function onSelectAll(isSelected, currentDisplayAndSelectedData){
+     //..
+}
+```
 
 <a name="v1.2.0"></a>
 # [v1.2.0](https://github.com/AllenFang/react-bootstrap-table/compare/v1.0.3...v1.2.0) (2015-10-13)

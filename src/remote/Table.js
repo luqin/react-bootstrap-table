@@ -1,5 +1,6 @@
 import React from 'react';
 import {BootstrapTable, TableDataSet} from '../index';
+import objectAssign from 'object-assign';
 
 const isArray = Array.isArray;
 
@@ -17,12 +18,10 @@ class Table extends React.Component {
     };
 
     this.state = {
+      dataTotalSize: 0,
       options: {
         page: 1,
-        // 远程分页添加内容
-        isRemoteLoad: true, // 远程分页
         onPageChange: this.onPageChange.bind(this),
-        dataSize: 0,
         onSortChange: this.onSortChange.bind(this),
       },
     };
@@ -71,16 +70,20 @@ class Table extends React.Component {
 
   onDataSourceResponse(result) {
     let {pageInfo} = result;
+    let dataTotalSize = pageInfo.dataSize;
 
-    var newState = $.extend(true, {}, this.state.options);
-    newState.page = pageInfo.page;
-    newState.dataSize = pageInfo.dataSize;
+    let newOptions = objectAssign({}, this.state.options, {
+      page: pageInfo.page,
+    });
 
-    var newData = result.data;
+    let newData = result.data;
 
     // this.query = query;
 
-    this.setState({ options: newState }, function cb() {
+    this.setState({
+      dataTotalSize: dataTotalSize,
+      options: newOptions,
+    }, function cb() {
       this.dataSet.setData(newData);
     });
   }
@@ -148,13 +151,41 @@ class Table extends React.Component {
   }
 
   render() {
-    this.dataSource = this.props.dataSource;
+    let {
+      data,
+      dataSource,
+      pagination,
+      fetchInfo,
+      options,
+      ...other,
+      } = this.props;
+
+    this.dataSource = dataSource;
+
+    let remote = this.isRemoteDataSource();
+
+    let tableProps = {
+      remote: remote,
+      options: this.state.options,
+    };
+
+    if (remote) {
+      tableProps.data = this.dataSet;
+      tableProps.fetchInfo = { dataTotalSize: this.state.dataTotalSize };
+      if ('pagination' in this.props) {
+        tableProps.pagination = pagination;
+      } else {
+        tableProps.pagination = true;
+      }
+    } else {
+      tableProps.pagination = pagination;
+      tableProps.data = dataSource || data;
+    }
 
     return (
       <BootstrapTable
-        {...this.props}
-        data={this.dataSet}
-        options={this.state.options}
+        {...other}
+        {...tableProps}
       >
         {this.props.children}
       </BootstrapTable>

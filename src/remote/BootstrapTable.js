@@ -11,20 +11,10 @@ class BootstrapTable extends React.Component {
     dataSource: React.PropTypes.oneOfType([React.PropTypes.array, React.PropTypes.func]),
     columns: React.PropTypes.array,
     rowKey: React.PropTypes.string.isRequired,
-    pagination: React.PropTypes.oneOfType([React.PropTypes.bool, React.PropTypes.object]),
     order: React.PropTypes.array,
-    rowSelection: React.PropTypes.oneOfType([React.PropTypes.array, React.PropTypes.object]),
-
-    height: React.PropTypes.string,
-    striped: React.PropTypes.bool,
-    bordered: React.PropTypes.bool,
-    hover: React.PropTypes.bool,
-    condensed: React.PropTypes.bool,
   };
 
-  static defaultProps = {
-    pagination: false,
-  };
+  static defaultProps = {};
 
   constructor(props) {
     super(props);
@@ -58,9 +48,17 @@ class BootstrapTable extends React.Component {
   }
 
   render() {
-    const {dataSource, pagination, rowSelection, ...other} = this.props;
+    const {
+      dataSource,
+      ...other,
+      } = this.props;
+
     return (
-      <BSTable ref="grid" {...other} dataSource={dataSource} pagination selectRow={rowSelection}>
+      <BSTable
+        ref="grid"
+        {...other}
+        dataSource={dataSource}
+      >
         {this.renderTableHeaderColumns(this.props)}
       </BSTable>
     );

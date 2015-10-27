@@ -1,5 +1,5 @@
 import React from 'react';
-import PageButton from './PageButton.js'
+import PageButton from './PageButton.js';
 import Const from '../Const';
 
 class PaginationList extends React.Component {
@@ -31,31 +31,31 @@ class PaginationList extends React.Component {
     }
   }
 
-  //APPBIR  ADD  is Remote load Page componentWillReceiveProps will redrect change state
   componentWillReceiveProps(nextProps) {
-    if (this.props.isRemoteLoad) {
-      (nextProps.currPage != undefined) ? this.setState({currentPage: nextProps.currPage}) : null;
-      (nextProps.sizePerPage != undefined) ? this.setState({sizePerPage: nextProps.sizePerPage}) : null;
+    if (this.props.remote) {
+      if (nextProps.currPage || nextProps.sizePerPage) {
+        this.setState({
+          currentPage: nextProps.currPage,
+          sizePerPage: nextProps.sizePerPage,
+        });
+      }
     }
   }
 
 
   changeSizePerPage(e) {
     e.preventDefault();
+
     var selectSize = parseInt(e.currentTarget.text);
     if (selectSize != this.state.sizePerPage) {
       this.totalPages = Math.ceil(this.props.dataSize / selectSize);
       if (this.state.currentPage > this.totalPages)
         this.state.currentPage = this.totalPages;
 
-      // APPBIR  EDIT  remote load data change  call back function to request data
-
-      if (!this.props.isRemoteLoad) {
-        this.setState({
-          sizePerPage: selectSize,
-          currentPage: this.state.currentPage
-        });
-      }
+      this.setState({
+        sizePerPage: selectSize,
+        currentPage: this.state.currentPage
+      });
       this.props.changePage(this.state.currentPage, selectSize);
     }
   }
@@ -82,7 +82,7 @@ class PaginationList extends React.Component {
             <button className="btn btn-default dropdown-toggle" type="button" id="pageDropDown" data-toggle="dropdown"
                     aria-expanded="true">
               {this.state.sizePerPage}
-              <span className="caret"></span>
+              <span className="caret"/>
             </button>
             <ul className="dropdown-menu" role="menu" aria-labelledby="pageDropDown">
               {sizePerPageList}
@@ -101,7 +101,7 @@ class PaginationList extends React.Component {
   makePage() {
     var pages = this.getPages();
     return pages.map(function (page) {
-      var isActive = page == this.state.currentPage ? true : false;
+      var isActive = page === this.state.currentPage;
       return (
         <PageButton changePage={this.changePage.bind(this)} active={isActive} key={page}>{page}</PageButton>
       )
@@ -141,10 +141,12 @@ PaginationList.propTypes = {
   dataSize: React.PropTypes.number,
   changePage: React.PropTypes.func,
   sizePerPageList: React.PropTypes.array,
-  paginationSize: React.PropTypes.number
+  paginationSize: React.PropTypes.number,
+  remote: React.PropTypes.bool,
 };
 
 PaginationList.defaultProps = {
   sizePerPage: Const.SIZE_PER_PAGE
-}
+};
+
 export default PaginationList;

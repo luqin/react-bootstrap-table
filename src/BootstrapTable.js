@@ -14,14 +14,21 @@ class BootstrapTable extends React.Component {
     super(props);
 
     this._attachCellEditFunc();
-    let keyField = null;
+    let {keyField} = props;
     let customSortFuncMap = {};
 
-    React.Children.forEach(this.props.children, function (column) {
-      if (column.props.isKey) {
-        if (keyField != null) throw "Error. Multiple key column be detected in TableHeaderColumn.";
-        keyField = column.props.dataField;
-      }
+    if (!(typeof keyField === 'string' && keyField.length)) {
+      React.Children.forEach(this.props.children, column=> {
+        if (column.props.isKey) {
+          if (keyField != null) {
+            throw "Error. Multiple key column be detected in TableHeaderColumn.";
+          }
+          keyField = column.props.dataField;
+        }
+      }, this);
+    }
+
+    React.Children.forEach(this.props.children, column=> {
       if (column.props.sortFunc) {
         customSortFuncMap[column.props.dataField] = column.props.sortFunc;
       }
@@ -43,9 +50,7 @@ class BootstrapTable extends React.Component {
       this.store = new TableDataStore(this.props.data);
     }
 
-    // APPBIR add isRemoteLoad para
-
-    this.store.setProps(this.props.pagination, keyField, customSortFuncMap, this.props.options.isRemoteLoad);
+    this.store.setProps(this.props.pagination, keyField, customSortFuncMap, this.isRemoteDataSource());
 
     if (this.props.selectRow && this.props.selectRow.selected) {
       this.store.setSelectedRowKey(this.props.selectRow.selected);
@@ -91,16 +96,16 @@ class BootstrapTable extends React.Component {
     }
   }
 
-  componentDidMount(){
-     this._adjustHeaderWidth();
-     window.addEventListener('resize', this._adjustHeaderWidth.bind(this));
-   }
+  componentDidMount() {
+    this._adjustHeaderWidth();
+    window.addEventListener('resize', this._adjustHeaderWidth.bind(this));
+  }
 
-   componentWillUnmount() {
-     window.removeEventListener('resize', this._adjustHeaderWidth.bind(this));
-   }
+  componentWillUnmount() {
+    window.removeEventListener('resize', this._adjustHeaderWidth.bind(this));
+  }
 
-  componentDidUpdate(){
+  componentDidUpdate() {
     this._adjustHeaderWidth();
     this._attachCellEditFunc();
     if (this.props.options.afterTableComplete)
@@ -113,6 +118,17 @@ class BootstrapTable extends React.Component {
       if (this.props.cellEdit.mode !== Const.CELL_EDIT_NONE)
         this.props.selectRow.clickToSelect = false;
     }
+  }
+
+  /**
+   * Returns true if in the current configuration,
+   * the datagrid should load its data remotely.
+   *
+   * @param  {Object}  [props] Optional. If not given, this.props will be used
+   * @return {Boolean}
+   */
+  isRemoteDataSource(props) {
+    return (props || this.props).remote;
   }
 
   render() {
@@ -145,37 +161,44 @@ class BootstrapTable extends React.Component {
       <div className="react-bs-container">
         {toolBar}
         <div ref="table" style={style} className={tableClass}>
-          <TableHeader rowSelectType={this.props.selectRow.mode}
-                       hideSelectColumn={this.props.selectRow.hideSelectColumn}
-                       sortName={this.props.options.sortName}
-                       sortOrder={this.props.options.sortOrder}
-                       onSort={this.handleSort.bind(this)}
-                       onSelectAllRow={this.handleSelectAllRow.bind(this)}
-                       bordered={this.props.bordered}>
+          <TableHeader
+            rowSelectType={this.props.selectRow.mode}
+            hideSelectColumn={this.props.selectRow.hideSelectColumn}
+            sortName={this.props.options.sortName}
+            sortOrder={this.props.options.sortOrder}
+            onSort={this.handleSort.bind(this)}
+            onSelectAllRow={this.handleSelectAllRow.bind(this)}
+            bordered={this.props.bordered}>
             {this.props.children}
           </TableHeader>
-          <TableBody ref="body" data={this.state.data} columns={columns}
-                     trClassName={this.props.trClassName}
-                     striped={this.props.striped}
-                     bordered={this.props.bordered}
-                     hover={this.props.hover}
-                     keyField={this.store.getKeyField()}
-                     condensed={this.props.condensed}
-                     selectRow={this.props.selectRow}
-                     cellEdit={this.props.cellEdit}
-                     selectedRowKeys={this.state.selectedRowKeys}
-                     onSelectRow={this.handleSelectRow.bind(this)}/>
+          <TableBody
+            ref="body"
+            data={this.state.data}
+            columns={columns}
+            trClassName={this.props.trClassName}
+            striped={this.props.striped}
+            bordered={this.props.bordered}
+            hover={this.props.hover}
+            keyField={this.store.getKeyField()}
+            condensed={this.props.condensed}
+            selectRow={this.props.selectRow}
+            cellEdit={this.props.cellEdit}
+            selectedRowKeys={this.state.selectedRowKeys}
+            onSelectRow={this.handleSelectRow.bind(this)}/>
           {tableFilter}
+          {pagination}
         </div>
-        {pagination}
       </div>
     )
   }
 
   handleSort(order, sortField) {
-    //APPBIR  ADD remote sort open interface
-    if (this.props.options && this.props.options.isRemoteLoad) {
-      return this.props.options.onSortChange && this.props.options.onSortChange(order, sortField, this.props.options);
+    if (this.props.options.onSortChange) {
+      this.props.options.onSortChange(sortField, order, this.props);
+    }
+
+    if (this.isRemoteDataSource()) {
+      return;
     }
 
     let result = this.store.sort(order, sortField).get();
@@ -185,10 +208,13 @@ class BootstrapTable extends React.Component {
   }
 
   handlePaginationData(page, sizePerPage) {
-    //APPBIR ADD
-    let onPageChange = this.props.options.onPageChange;
+    const {onPageChange} = this.props.options;
     if (onPageChange) {
-      return onPageChange(page, sizePerPage);
+      onPageChange(page, sizePerPage);
+    }
+
+    if (this.isRemoteDataSource()) {
+      return;
     }
 
     let result = this.store.page(page, sizePerPage).get();
@@ -294,6 +320,18 @@ class BootstrapTable extends React.Component {
     }
   }
 
+  getSizePerPage() {
+    if (this.props.pagination) {
+      return this.refs.pagination.getSizePerPage();
+    }
+  }
+
+  getCurrentPage() {
+    if (this.props.pagination) {
+      return this.refs.pagination.getCurrentPage();
+    }
+  }
+
   handleDropRow() {
     let result;
     let dropRowKeys = this.store.getSelectedRowKeys();
@@ -363,13 +401,11 @@ class BootstrapTable extends React.Component {
   renderPagination() {
     if (this.props.pagination) {
       let dataSize;
-      if (this.props.options.isRemoteLoad && this.props.options.dataSize) {
-        dataSize = this.props.options.dataSize;
+      if (this.isRemoteDataSource()) {
+        dataSize = this.props.fetchInfo.dataTotalSize;
       } else {
         dataSize = this.store.getDataNum();
       }
-      // APPBIR ADD isRemoteLoad
-      // APPBIR set dataSize EDIT dataSize:this.store.getDataNum()
       return (
         <div>
           <PaginationList
@@ -379,14 +415,13 @@ class BootstrapTable extends React.Component {
             sizePerPage={this.props.options.sizePerPage || Const.SIZE_PER_PAGE_LIST[0]}
             sizePerPageList={this.props.options.sizePerPageList || Const.SIZE_PER_PAGE_LIST}
             paginationSize={this.props.options.paginationSize || Const.PAGINATION_SIZE}
-            isRemoteLoad={this.props.options.isRemoteLoad}
+            remote={this.isRemoteDataSource()}
             dataSize={dataSize}
           />
         </div>
-      )
-    } else {
-      return null;
+      );
     }
+    return null;
   }
 
   renderToolBar() {
@@ -400,8 +435,8 @@ class BootstrapTable extends React.Component {
           //when you want same auto generate value and not allow edit, example ID field
           autoValue: props.autoValue || false,
           //for create eidtor, no params for column.editable() indicate that editor for new row
-          editable:props.editable&&(typeof props.editable==="function")?props.editable():props.editable,
-          format:props.format?format:false
+          editable: props.editable && (typeof props.editable === "function") ? props.editable() : props.editable,
+          format: props.format ? format : false
         };
       });
     } else {
@@ -414,15 +449,17 @@ class BootstrapTable extends React.Component {
     if (this.props.insertRow || this.props.deleteRow || this.props.search) {
       return (
         <div className="tool-bar">
-          <ToolBar enableInsert={this.props.insertRow}
-                   enableDelete={this.props.deleteRow}
-                   enableSearch={this.props.search}
-                   columns={columns}
-                   searchPlaceholder={this.props.searchPlaceholder}
-                   onAddRow={this.handleAddRow.bind(this)}
-                   onAddRowBegin={this.handleAddRowBegin.bind(this)}
-                   onDropRow={this.handleDropRow.bind(this)}
-                   onSearch={this.handleSearch.bind(this)}/>
+          <ToolBar
+            enableInsert={this.props.insertRow}
+            enableDelete={this.props.deleteRow}
+            enableSearch={this.props.search}
+            columns={columns}
+            searchPlaceholder={this.props.searchPlaceholder}
+            onAddRow={this.handleAddRow.bind(this)}
+            onAddRowBegin={this.handleAddRowBegin.bind(this)}
+            onDropRow={this.handleDropRow.bind(this)}
+            onSearch={this.handleSearch.bind(this)}
+          />
         </div>
       )
     } else {
@@ -442,15 +479,17 @@ class BootstrapTable extends React.Component {
     }
   }
 
-  _adjustHeaderWidth(){
+  _adjustHeaderWidth() {
     this.refs.table.childNodes[0].childNodes[0].style.width =
-      this.refs.table.childNodes[1].childNodes[0].offsetWidth-1+"px";
+      this.refs.table.childNodes[1].childNodes[0].offsetWidth - 1 + "px";
   }
 }
 
 BootstrapTable.propTypes = {
+  keyField: React.PropTypes.string,
   height: React.PropTypes.string,
   data: React.PropTypes.array,
+  remote: React.PropTypes.bool, // remote data, default is false
   striped: React.PropTypes.bool,
   bordered: React.PropTypes.bool,
   hover: React.PropTypes.bool,
@@ -487,12 +526,12 @@ BootstrapTable.propTypes = {
     sizePerPageList: React.PropTypes.array,
     sizePerPage: React.PropTypes.number,
     paginationSize: React.PropTypes.number,
-    //APPBIR ADD
     onSortChange: React.PropTypes.func,
     onPageChange: React.PropTypes.func,
-    isRemoteLoad: React.PropTypes.bool,
-    dataSize: React.PropTypes.number
-  })
+  }),
+  fetchInfo: React.PropTypes.shape({
+    dataTotalSize: React.PropTypes.number,
+  }),
 };
 BootstrapTable.defaultProps = {
   height: "100%",
@@ -532,7 +571,10 @@ BootstrapTable.defaultProps = {
     sizePerPageList: Const.SIZE_PER_PAGE_LIST,
     sizePerPage: Const.SIZE_PER_PAGE_LIST[0],
     paginationSize: Const.PAGINATION_SIZE
-  }
+  },
+  fetchInfo: {
+    dataTotalSize: 0,
+  },
 };
 
 export default BootstrapTable;
