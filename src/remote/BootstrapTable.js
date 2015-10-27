@@ -1,6 +1,6 @@
 import React from 'react';
 import BSTable from './Table';
-import {TableHeaderColumn} from '../index';
+import TableHeaderColumn from '../TableHeaderColumn';
 
 class BootstrapTable extends React.Component {
 
